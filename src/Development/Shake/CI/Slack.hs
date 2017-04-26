@@ -88,7 +88,7 @@ notify notifications action = do
   actionOnException (do { liftIO (slack (start ns)) ; result <- action ; liftIO (slack (success ns)) ; return result })
                     (slack (failure ns))
 
-jenkins :: Maybe Text -> Action Notifications
+jenkins :: Maybe String -> Action Notifications
 jenkins tag = do
   jenkinsURL <- T.pack <$> getEnv' "JENKINS_URL"
   jobName <- T.pack <$> getEnv' "JOB_NAME"
@@ -97,7 +97,7 @@ jenkins tag = do
   let msg t = attachment (Author "Jenkins" (Just jenkinsURL) (Just "https://a.slack-edge.com/205a/img/services/jenkins-ci_36.png"))
                          (link buildURL jobName)
                          (T.concat [t, " (#", buildNumber, ")"])
-      withTag x = T.concat $ [x] ++ maybe [] (\t -> [" ", t]) tag
+      withTag x = T.concat $ [x] ++ maybe [] (\t -> [" ", T.pack t]) tag
   return Notifications {
       start = message Nothing [msg $ withTag "Start"]
     , success = message Nothing [msg $ withTag "Success"]
