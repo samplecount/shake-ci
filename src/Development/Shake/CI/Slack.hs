@@ -41,20 +41,20 @@ author_ n = Author n Nothing Nothing
 
 data Attachment = Attachment {
     color :: Maybe Text
-  , author :: Author
+  , author :: Maybe Author
   , title :: Text
   , text :: Text
   } deriving (Show)
 
-attachment :: Author -> Text -> Text -> Attachment
-attachment = Attachment Nothing
+attachment :: Text -> Text -> Attachment
+attachment = Attachment Nothing Nothing
 
 instance ToJSON Attachment where
   toJSON x = object $ catMaybes [
       ("color" .=) <$> color x
-    , Just ("author_name" .= authorName (author x))
-    , ("author_link" .=) <$> authorLink (author x)
-    , ("author_icon" .=) <$> authorIcon (author x)
+    , ("author_name" .=) <$> (authorName <$> author x)
+    , ("author_link" .=) <$> (authorLink =<< author x)
+    , ("author_icon" .=) <$> (authorIcon =<< author x)
     , Just ("title" .= title x)
     , Just ("text" .= text x)
     ]
@@ -94,9 +94,8 @@ jenkins tag = do
   jobName <- T.pack <$> getEnv' "JOB_NAME"
   buildURL <- T.pack <$> getEnv' "BUILD_URL"
   buildNumber <- T.pack <$> getEnv' "BUILD_NUMBER"
-  let msg t = attachment (Author "Jenkins" (Just jenkinsURL) (Just "https://a.slack-edge.com/205a/img/services/jenkins-ci_36.png"))
-                         (link buildURL jobName)
-                         (T.concat [t, " (#", buildNumber, ")"])
+  let msg t = attachment (link buildURL jobName)
+                         (T.concat [t, " (", link (T.concat [buildURL, "/console"]) (T.concat ["#", buildNumber]), ")"])
       withTag x = T.concat $ [x] ++ maybe [] (\t -> [" ", T.pack t]) tag
   return Notifications {
       start = message Nothing [msg $ withTag "Start"]
