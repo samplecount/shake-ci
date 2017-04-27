@@ -31,8 +31,9 @@ extra-source-files:
   
 library
   hs-source-dirs:      src
-  exposed-modules:     Development.Shake.CI.Env
+  exposed-modules:     Development.Shake.CI
                        Development.Shake.CI.Slack
+  other-modules:       Development.Shake.CI.Env
   build-depends:       base >= 4.7 && < 5,
                        aeson,
                        shake,

@@ -3,7 +3,11 @@
 -- All rights reserved.
 
 module Development.Shake.CI (
-  notify
+    getEnv'
+  , withEnv
+  , isCI
+  , whenCI
+  , unlessCI
 ) where
 
-import Development.Shake.CI.Slack
+import Development.Shake.CI.Env
