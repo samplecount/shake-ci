@@ -8,6 +8,8 @@ module Development.Shake.CI (
   , isCI
   , whenCI
   , unlessCI
+  , slack
 ) where
 
 import Development.Shake.CI.Env
+import Development.Shake.CI.Slack

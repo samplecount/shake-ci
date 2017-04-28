@@ -10,6 +10,7 @@ module Development.Shake.CI.Slack (
   , author_
   , message_
   , message
+  , slack
   , notify
   , jenkins
 ) where
@@ -71,8 +72,11 @@ link url desc = T.concat ["<", url, "|", desc, ">"]
 -- | Post a text message to a slack channel.
 --
 -- SLACK_URL environment variable needs to be defined.
-slack :: Message -> IO ()
-slack msg = withEnvIO "SLACK_URL" $ \url -> do
+slack :: Message -> Action ()
+slack = liftIO . slackIO
+
+slackIO :: Message -> IO ()
+slackIO msg = withEnvIO "SLACK_URL" $ \url -> do
   _ <- post url (toJSON msg)
   return ()
 
@@ -85,8 +89,8 @@ data Notifications = Notifications {
 notify :: Action Notifications -> Action a -> Action a
 notify notifications action = do
   ns <- notifications
-  actionOnException (do { liftIO (slack (start ns)) ; result <- action ; liftIO (slack (success ns)) ; return result })
-                    (slack (failure ns))
+  actionOnException (do { liftIO (slackIO (start ns)) ; result <- action ; liftIO (slackIO (success ns)) ; return result })
+                    (slackIO (failure ns))
 
 jenkins :: Maybe String -> Action Notifications
 jenkins tag = do
